@@ -15,9 +15,9 @@ class ImageDataset(Dataset):
       # the data has to be reshaped to a vector
       real_data, _ = self.real_dataset[i]
       real_data = real_data.view(real_data.size(0), -1)
-      return (real_data, torch.ones(1))
+      return (real_data, torch.ones(1, 1))
     else:
       random_seed = torch.randn(1, self.generator.input_size)
       # fake data label is 0
       fake_data = self.generator(random_seed)
-      return (fake_data.data, torch.zeros(1))
+      return (fake_data.data, torch.zeros(1, 1))

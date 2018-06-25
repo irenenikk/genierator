@@ -30,12 +30,14 @@ class Discr(nn.Module):
         # output is 0 (fake) or 1 (real)
         self.l1 = nn.Linear(784, 512)
         self.l2 = nn.Linear(512, 128)
-        self.l3 = nn.Linear(128, 1)
+        self.l3 = nn.Linear(128, 64)
+        self.l4 = nn.Linear(64, 1)
 
     def forward(self, x):
         x = self.l1(x)
         x = func.relu(self.l2(x))
-        return func.softmax(self.l3(x))
+        x = self.l3(x)
+        return func.sigmoid(self.l4(x))
 
     def loss_fun(self):
         # binary classification
