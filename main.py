@@ -17,15 +17,17 @@ def train_discriminator(real_inputs, real_labels, discriminator, loss_fun, batch
     outputs = discriminator(real_inputs)
     discriminator_loss = loss_fun(outputs, real_labels)
     accuracy = calculate_accuracy(outputs, real_labels, batch_size)
-    print('discriminator training accuracy: ' + str(accuracy.item()))
     discriminator_loss.backward()
     discriminator_optimizer.step()
+    return accuracy.item()
 
 def calculate_accuracy(outputs, real_labels, batch_size):
     '''
         Calculate training accuracy
     '''
     predictions = torch.round(outputs)
+    # the real labels have to be rounded because of the smoothing
+    real_labels = torch.round(real_labels)
     correct = (predictions == real_labels).sum().float()
     accuracy = correct/batch_size
     return accuracy
@@ -50,11 +52,11 @@ def train_generator(batch_size, generator, discriminator, loss_fun):
     predictions = discriminator(fake_data)
     # we wnat the discriminator to think they're real
     generator_loss = loss_fun(predictions, target_fake_labels)
-    print('generator loss: ' + str(generator_loss.item()))
     generator_loss.backward()
     generator_optimizer.step()
+    return generator_loss.item()
 
-def train_gan(generator, discriminator, batch_size=256, epochs=2):
+def train_gan(generator, discriminator, batch_size=256, epochs=50):
     '''
         The training loop for the whole network
     '''
@@ -73,13 +75,23 @@ def train_gan(generator, discriminator, batch_size=256, epochs=2):
     )
     for e in range(epochs):
         # train for each data sample
-        print('epoch:' + str(e))
+        print('epoch {}: '.format(str(e)))
+        dis_acc = 0
+        gen_loss = 0
         for data in training_dataloader:
             real_inputs, real_labels = data
             # first train discriminator with real data
-            train_discriminator(real_inputs, real_labels, discriminator, loss_fun, batch_size)
+            discriminator_accuracy = train_discriminator(real_inputs, real_labels, discriminator, loss_fun, batch_size)
+            dis_acc += discriminator_accuracy
             # then train generator with one batch
-            train_generator(batch_size, generator, discriminator, loss_fun)
+            generator_loss = train_generator(batch_size, generator, discriminator, loss_fun)
+            gen_loss += generator_loss
+        if len(training_dataloader) == 0:
+            print('Where\'s your data you dweeb')
+            exit()
+        dis_acc_av = float(dis_acc) / len(training_dataloader)
+        gen_loss_av = float(gen_loss) / len(training_dataloader)
+        print('Average discriminator accuracy {} and generator loss {}'.format(dis_acc_av, gen_loss_av))
     return training_dataset
 
 def test_generator(gen, real_data_shape):

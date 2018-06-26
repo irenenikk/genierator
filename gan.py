@@ -12,11 +12,12 @@ class Gen(nn.Module):
         self.l1 = nn.Linear(self.input_size, 128)
         self.l2 = nn.Linear(128,512)
         self.l3 = nn.Linear(512, 784)
+        self.leaky = nn.LeakyReLU(0.1)
 
     def forward(self, x):
         x = x.view((x.size(0), -1))
-        x = func.relu(self.l1(x))
-        x = func.relu(self.l2(x))
+        x = self.leaky(self.l1(x))
+        x = self.leaky(self.l2(x))
         return func.tanh(self.l3(x))
     
     def loss_fun(self):
@@ -32,10 +33,11 @@ class Discr(nn.Module):
         self.l2 = nn.Linear(512, 128)
         self.l3 = nn.Linear(128, 64)
         self.l4 = nn.Linear(64, 1)
+        self.leaky = nn.LeakyReLU(0.1)
 
     def forward(self, x):
         x = self.l1(x)
-        x = func.relu(self.l2(x))
+        x = self.leaky(self.l2(x))
         x = self.l3(x)
         return func.sigmoid(self.l4(x))
 
