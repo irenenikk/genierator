@@ -3,7 +3,7 @@ from torch.utils.data import Dataset
 import random
 import numpy as np
 
-class ImageDataset(Dataset):
+class MixedImageDataset(Dataset):
   def __init__(self, real_dataset, generator, batch_size):
     self.real_dataset = real_dataset
     self.generator = generator

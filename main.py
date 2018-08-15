@@ -1,10 +1,15 @@
 import torch
 import torchvision
+import os
 from torch.autograd import Variable
 from gan import Gen as generator
 from gan import Discr as discriminator
-from image_dataset import ImageDataset
+from mixed_image_dataset import MixedImageDataset
 import matplotlib.pyplot as plt
+from cat_image_dataset import CatImageDataset
+
+def get_mnist_data():
+    return torchvision.datasets.MNIST( './data/mnist', download=True, train=True, transform=torchvision.transforms.ToTensor(), )        
 
 def train_discriminator(real_inputs, real_labels, discriminator, loss_fun, batch_size):
     '''
@@ -61,13 +66,8 @@ def train_gan(generator, discriminator, batch_size=256, epochs=50):
         The training loop for the whole network
     '''
     loss_fun = discriminator.loss_fun()
-    real_image_dataset = torchvision.datasets.MNIST(
-        './data', 
-        download=True, 
-        train=True, 
-        transform=torchvision.transforms.ToTensor(),
-    )
-    training_dataset = ImageDataset(real_image_dataset, generator, batch_size)
+    real_image_dataset = CatImageDataset(batch_size)
+    training_dataset = MixedImageDataset(real_image_dataset, generator, batch_size)
     training_dataloader = torch.utils.data.DataLoader(
         training_dataset, 
         shuffle=True, 
@@ -102,6 +102,7 @@ def test_generator(gen, real_data_shape):
         random_seed = torch.randn(1, gen.input_size)
         image = gen(random_seed)
         # reshape back to original form
+        # this is really ugly but pytorch mnsit data is greyscale and in a tensor
         image = image.view(real_data_shape[1], real_data_shape[2])
         image = image.detach().numpy()
         fig.add_subplot(rows, cols, i)

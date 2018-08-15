@@ -11,7 +11,7 @@ class Gen(nn.Module):
         self.input_size = 100
         self.l1 = nn.Linear(self.input_size, 128)
         self.l2 = nn.Linear(128,512)
-        self.l3 = nn.Linear(512, 784)
+        self.l3 = nn.Linear(512, 10000)
         self.leaky = nn.LeakyReLU(0.1)
 
     def forward(self, x):
@@ -29,7 +29,7 @@ class Discr(nn.Module):
         super(Discr, self). __init__()
         # input is a vector of pixels
         # output is 0 (fake) or 1 (real)
-        self.l1 = nn.Linear(784, 512)
+        self.l1 = nn.Linear(10000, 512)
         self.l2 = nn.Linear(512, 128)
         self.l3 = nn.Linear(128, 64)
         self.l4 = nn.Linear(64, 1)
