@@ -6,17 +6,17 @@ from gan import Discr as discriminator
 from image_dataset import ImageDataset
 import matplotlib.pyplot as plt
 
-def train_discriminator(real_inputs, real_labels, discriminator, loss_fun, batch_size):
+def train_discriminator(mixed_inputs, mixed_labels, discriminator, loss_fun, batch_size):
     '''
         Train the discriminator with one batch of mixed real and fake data
     '''
     # discriminator and generator have separate optimizers
     discriminator_optimizer = torch.optim.Adam(discriminator.parameters(), lr=0.001)
-    real_inputs, real_labels = Variable(real_inputs), Variable(real_labels)
+    mixed_inputs, mixed_labels = Variable(mixed_inputs), Variable(mixed_labels)
     discriminator_optimizer.zero_grad()
-    outputs = discriminator(real_inputs)
-    discriminator_loss = loss_fun(outputs, real_labels)
-    accuracy = calculate_accuracy(outputs, real_labels, batch_size)
+    outputs = discriminator(mixed_inputs)
+    discriminator_loss = loss_fun(outputs, mixed_labels)
+    accuracy = calculate_accuracy(outputs, mixed_labels, batch_size)
     discriminator_loss.backward()
     discriminator_optimizer.step()
     return accuracy.item()
@@ -79,9 +79,9 @@ def train_gan(generator, discriminator, batch_size=256, epochs=50):
         dis_acc = 0
         gen_loss = 0
         for data in training_dataloader:
-            real_inputs, real_labels = data
+            mixed_inputs, mixed_labels = data
             # first train discriminator with real data
-            discriminator_accuracy = train_discriminator(real_inputs, real_labels, discriminator, loss_fun, batch_size)
+            discriminator_accuracy = train_discriminator(mixed_inputs, mixed_labels, discriminator, loss_fun, batch_size)
             dis_acc += discriminator_accuracy
             # then train generator with one batch
             generator_loss = train_generator(batch_size, generator, discriminator, loss_fun)
